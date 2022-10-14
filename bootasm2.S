@@ -43,14 +43,40 @@ cons_writeline:
     call    cons_write_crlf
     ret    
 
+
+cons_write_int:
+    movw %bx, %ax               # put bx into ax
+    movb    $0x0e, %ah          # set ah to 0e for print pourposes
+    movw $int_starter + 5, %si      # set up string with placeholder
+cons_create_int_rpt:
+    call divide_by_ten          # call div to get our remainder
+    # fish for remainder in dx (it's dl)
+    add $48, %dl                # add 48 to it
+    movb %dl, (%si)               # add remainder+48 (stored in) to string
+    dec %si                     # reduce string
+    cmp $0, %ax                 # compare ax to 0
+    jnz cons_create_int_rpt     # keep creating the value if not 0
+    call cons_writeline         # if 0, will fall throgh to writeline call    
+cons_write_int_done:
+    ret
+    
+divide_by_ten:
+    xor %dx, %dx
+    movw $10, %cx
+    div %cx                     # remainder will be in dx
+    ret
+
 real_start:
     movb    %dl, (boot_device) # Boot device number is passed in DL from BIOS. Save it hear since DL might get trashed
 
-    movw    $boot_message, %si  # Display our boot message
-    call    cons_writeline
+    movw    $boot_message, %si  # Display our boot message - load string stored in boot message method into SI
+    call    cons_writeline      # display boot message
 
     movw    $booted_from_msg, %si
     call    cons_write
+
+    movw $0xFFFF, %bx             # number malarkey
+    call cons_write_int
 
     movb    (boot_device), %dl
     cmp     $0x80, %dl
@@ -80,3 +106,5 @@ booted_from_msg:
 fd: .string "floppy disk"
 hd: .string "hard drive"
 
+int_starter:
+    .string "place"
