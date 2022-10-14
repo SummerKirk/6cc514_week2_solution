@@ -84,7 +84,7 @@ cons_write_hex_done:
 
 divide_by_sixteen:
     xor %dx, %dx
-    movw $10, %cx
+    movw $16, %cx
     div %cx
     ret
 
