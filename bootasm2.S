@@ -51,7 +51,7 @@ cons_create_int_rpt:
     call divide_by_ten          # call div to get our remainder
     # fish for remainder in dx (it's dl)
     add $48, %dl                # add 48 to it
-    movb %dl, (%si)               # add remainder+48 (stored in) to string
+    movb %dl, (%si)             # add remainder+48 (stored in) to string
     dec %si                     # reduce string
     cmp $0, %ax                 # compare ax to 0
     jnz cons_create_int_rpt     # keep creating the value if not 0
@@ -67,10 +67,25 @@ divide_by_ten:
 
 
 cons_write_hex:
-
+    movw %bx, %ax
+    movw $int_starter + 4, %si
+    movw $hex_lookup, %di       # put lookup in di
 create_hex_rpt:
+    call divide_by_sixteen      # need to turn bx into hex
+    movb $0, (%di)                # reset di (overwriting (di) would overweite what it's pointing to)
+    add %dl, (%di)              # lookup table, dl is added to di's incriment
+    movw %di, (%si)             # put di contents at si REMMEBER TO RESET DI
+    dec %si
+    cmp $0, %ax                 # compare ax to 0
+    jnz create_hex_rpt     # keep creating the value if not 0
     call cons_writeline
 cons_write_hex_done:
+    ret
+
+divide_by_sixteen:
+    xor %dx, %dx
+    movw $10, %cx
+    div %cx
     ret
 
 real_start:
@@ -84,6 +99,9 @@ real_start:
 
     movw $0xFFFF, %bx             # number malarkey
     call cons_write_int
+
+    movw $65535, %bx             # number malarkey
+    call cons_write_hex
 
     movb    (boot_device), %dl
     cmp     $0x80, %dl
@@ -115,3 +133,5 @@ hd: .string "hard drive"
 
 int_starter:
     .string "place"
+hex_lookup:
+    .ascii "123456789abcdef"
