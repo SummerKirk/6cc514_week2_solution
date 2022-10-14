@@ -46,7 +46,6 @@ cons_writeline:
 
 cons_write_int:
     movw %bx, %ax               # put bx into ax
-    movb    $0x0e, %ah          # set ah to 0e for print pourposes
     movw $int_starter + 5, %si      # set up string with placeholder
 cons_create_int_rpt:
     call divide_by_ten          # call div to get our remainder
@@ -59,11 +58,19 @@ cons_create_int_rpt:
     call cons_writeline         # if 0, will fall throgh to writeline call    
 cons_write_int_done:
     ret
-    
+
 divide_by_ten:
     xor %dx, %dx
     movw $10, %cx
     div %cx                     # remainder will be in dx
+    ret
+
+
+cons_write_hex:
+
+create_hex_rpt:
+    call cons_writeline
+cons_write_hex_done:
     ret
 
 real_start:
