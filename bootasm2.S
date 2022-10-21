@@ -67,18 +67,27 @@ divide_by_ten:
 
 
 cons_write_hex:
-    movw %bx, %ax
-    movw $int_starter + 4, %si
-    movw $hex_lookup, %di       # put lookup in di
+    movw $4, %cx
+    movb $0x0E, %ah
+    # movw %bx, %ax
+    # movw $int_starter + 4, %si
+    # movw $hex_lookup, %di       # put lookup in di
 create_hex_rpt:
-    call divide_by_sixteen      # need to turn bx into hex
-    movb $0, (%di)                # reset di (overwriting (di) would overweite what it's pointing to)
-    add %dl, (%di)              # lookup table, dl is added to di's incriment
-    movw %di, (%si)             # put di contents at si REMMEBER TO RESET DI
-    dec %si
-    cmp $0, %ax                 # compare ax to 0
-    jnz create_hex_rpt     # keep creating the value if not 0
-    call cons_writeline
+    # call divide_by_sixteen      # need to turn bx into hex
+    # movb $0, (%di)                # reset di (overwriting (di) would overweite what it's pointing to)
+    # add %dl, (%di)              # lookup table, dl is added to di's incriment
+    # movw %di, (%si)             # put di contents at si REMMEBER TO RESET DI
+    # dec %si
+    # cmp $0, %ax                 # compare ax to 0
+    # jnz create_hex_rpt     # keep creating the value if not 0
+    # call cons_writeline
+hexloop:
+    rol $4, %bx
+    movw %bx , %si
+    and $0x000F , %si
+    movb hex_lookup (%si), %al
+    int $0x10
+    loop hexloop
 cons_write_hex_done:
     ret
 
